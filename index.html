@@ -320,7 +320,7 @@
         </div>`;
       document.getElementById('controls-panel').innerHTML = `
         <button class="action-btn full-btn" onclick="verifyDials5()">Disarm Cobra Lock</button>`;
-      log("Set dials so D1 + D2 = D3, and total sum equals 15.");
+      log("Set dials so D1 + D2 = D3, and total sum equals 16.");
     }
 
     function spinDial5(idx) {
@@ -331,13 +331,13 @@
 
     function verifyDials5() {
       const sum = dials5[0] + dials5[1] + dials5[2];
-      if (sum === 15 && (dials5[0] + dials5[1] === dials5[2])) {
+      if (sum === 16 && (dials5[0] + dials5[1] === dials5[2])) {
         playSound('success');
         log("🎉 CHAMBER 5 CLEAR! Cobra disarmed!");
         setTimeout(() => { nextChamber(); }, 1800);
       } else {
         playSound('trap');
-        log("🚨 COBRA TRAP! Try 3 + 4 = 7 or similar sequence totaling 15.");
+        log("🚨 COBRA TRAP! Try 3 + 4 = 7 or similar sequence totaling 16.");
       }
     }
 
