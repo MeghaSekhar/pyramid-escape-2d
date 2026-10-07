@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pyramid Escape: Chamber 1</title>
+  <title>Pyramid Escape: 20 Trials</title>
   <style>
     body { 
       background: #1a1410; 
@@ -23,14 +23,14 @@
       border: 3px solid #d4af37; 
       padding: 24px; 
       border-radius: 8px; 
-      width: 440px; 
+      width: 460px; 
       text-align: center; 
       box-shadow: 0 10px 30px rgba(0,0,0,0.8); 
     }
-    h1 { color: #d4af37; font-size: 1.4rem; margin-bottom: 8px; }
-    p { font-size: 0.9rem; line-height: 1.4; color: #e0d0b0; }
+    h1 { color: #d4af37; font-size: 1.3rem; margin-bottom: 8px; }
+    p { font-size: 0.88rem; line-height: 1.4; color: #e0d0b0; margin-top: 0; }
 
-    /* Visual Containers Section */
+    /* Visual Containers Section (Chamber 1) */
     .visual-containers {
       display: flex;
       justify-content: space-around;
@@ -42,14 +42,7 @@
       border-radius: 6px;
       min-height: 170px;
     }
-
-    .container-wrapper {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-    }
-
+    .container-wrapper { display: flex; flex-direction: column; align-items: center; gap: 6px; }
     .vessel {
       width: 60px;
       border: 3px solid #d4af37;
@@ -61,27 +54,45 @@
       overflow: hidden;
       border-radius: 0 0 6px 6px;
     }
-
     .vessel.urn5 { height: 120px; }
     .vessel.urn3 { height: 80px; }
     .vessel.basin { height: 100px; width: 90px; border-color: #ffd700; }
-
     .water-fill {
-      width: 100%;
-      height: 0%;
+      width: 100%; height: 0%;
       background: linear-gradient(180deg, #4facfe 0%, #00f2fe 100%);
       transition: height 0.4s ease-in-out;
       box-shadow: 0 0 10px rgba(79, 172, 254, 0.5);
     }
+    .vessel-label { font-size: 0.8rem; color: #e0d0b0; font-weight: bold; }
 
-    .vessel-label {
-      font-size: 0.8rem;
-      color: #e0d0b0;
-      font-weight: bold;
+    /* Interactive Puzzle Box for Chambers 2-6 */
+    #puzzle-viewport {
+      background: #120e0b;
+      border: 1px solid #8b5a2b;
+      padding: 16px;
+      margin: 16px 0;
+      border-radius: 6px;
+      min-height: 150px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
 
+    .glyph-btn, .tile-btn, .dial-btn {
+      background: #3a2b1f;
+      border: 2px solid #b8860b;
+      color: #ffd700;
+      font-size: 1.4rem;
+      padding: 10px 16px;
+      margin: 4px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .glyph-btn:hover, .tile-btn:hover, .dial-btn:hover { background: #5c4532; }
+
     .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    button { 
+    button.action-btn { 
       background: #8b5a2b; 
       color: #fff; 
       border: 1px solid #d4af37; 
@@ -91,7 +102,7 @@
       font-weight: bold; 
       border-radius: 4px; 
     }
-    button:hover { background: #d4af37; color: #1a1410; }
+    button.action-btn:hover { background: #d4af37; color: #1a1410; }
     .full-btn { grid-column: span 2; background: #2e6f40; }
     .full-btn:hover { background: #3eb460; color: #fff; }
     .log { margin-top: 12px; font-size: 0.85rem; color: #ffab40; min-height: 24px; }
@@ -100,182 +111,348 @@
 <body>
 
   <div class="game-card">
-    <h1>🏺 CHAMBER 1: THE WATER SCALE</h1>
-    <p>The granite gate slams shut! Pour <strong>exactly 4 Liters</strong> into the scale basin to unlock Door 1.</p>
+    <h1 id="chamber-title">🏺 CHAMBER 1: THE WATER SCALE</h1>
+    <p id="chamber-desc">The granite gate slams shut! Pour <strong>exactly 4 Liters</strong> into the scale basin to unlock Door 1.</p>
 
-    <!-- Visual Water Containers -->
-    <div class="visual-containers">
-      <div class="container-wrapper">
-        <div class="vessel urn5">
-          <div id="fill5" class="water-fill"></div>
-        </div>
-        <div class="vessel-label">5L Urn (<span id="val5">0</span>/5L)</div>
-      </div>
+    <!-- Main Viewport Area -->
+    <div id="puzzle-viewport"></div>
 
-      <div class="container-wrapper">
-        <div class="vessel urn3">
-          <div id="fill3" class="water-fill"></div>
-        </div>
-        <div class="vessel-label">3L Urn (<span id="val3">0</span>/3L)</div>
-      </div>
-
-      <div class="container-wrapper">
-        <div class="vessel basin">
-          <div id="fillBasin" class="water-fill"></div>
-        </div>
-        <div class="vessel-label">⚖️ Basin (<span id="valBasin">0</span>/4L)</div>
-      </div>
-    </div>
-
-    <div class="controls">
-      <button onclick="fill5()">Fill 5L Urn</button>
-      <button onclick="fill3()">Fill 3L Urn</button>
-      <button onclick="pour5to3()">Pour 5L ➔ 3L</button>
-      <button onclick="pour3to5()">Pour 3L ➔ 5L</button>
-      <button onclick="empty5()">Empty 5L Urn</button>
-      <button onclick="empty3()">Empty 3L Urn</button>
-      <button class="full-btn" onclick="pour5ToBasin()">Pour 5L ➔ Basin</button>
-      <button class="full-btn" style="background:#8b2b2b;" onclick="resetBasin()">Empty Basin</button>
-    </div>
+    <!-- Interactive Buttons -->
+    <div id="controls-panel" class="controls"></div>
 
     <div class="log" id="logMsg"></div>
   </div>
 
   <script>
     // ==========================================
-    // 🔊 WEB AUDIO SYNTHESIZER
+    // 🔊 AUDIO SYNTHESIZER
     // ==========================================
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-    function playClickSound() {
+    function playSound(type) {
       if (audioCtx.state === 'suspended') audioCtx.resume();
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(600, audioCtx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.08);
-      gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
-      osc.connect(gain); osc.connect(audioCtx.destination);
-      osc.start(); osc.stop(audioCtx.currentTime + 0.08);
-    }
 
-    function playPourSound() {
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(180, audioCtx.currentTime);
-      osc.frequency.linearRampToValueAtTime(320, audioCtx.currentTime + 0.2);
-      gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
-      osc.connect(gain); osc.connect(audioCtx.destination);
-      osc.start(); osc.stop(audioCtx.currentTime + 0.25);
-    }
-
-    function playSuccessSound() {
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-      [261.63, 329.63, 392.00, 523.25].forEach((freq, idx) => {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'square';
-        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + idx * 0.1);
-        gain.gain.setValueAtTime(0.1, audioCtx.currentTime + idx * 0.1);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + idx * 0.1 + 0.25);
+      if (type === 'click') {
+        osc.type = 'sine'; osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
         osc.connect(gain); osc.connect(audioCtx.destination);
-        osc.start(audioCtx.currentTime + idx * 0.1);
-        osc.stop(audioCtx.currentTime + idx * 0.1 + 0.25);
-      });
-    }
-
-    function playTrapSound() {
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(150, audioCtx.currentTime);
-      osc.frequency.linearRampToValueAtTime(80, audioCtx.currentTime + 0.3);
-      gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
-      osc.connect(gain); osc.connect(audioCtx.destination);
-      osc.start(); osc.stop(audioCtx.currentTime + 0.35);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.08);
+      } else if (type === 'pour') {
+        osc.type = 'triangle'; osc.frequency.setValueAtTime(180, audioCtx.currentTime);
+        osc.frequency.linearRampToValueAtTime(320, audioCtx.currentTime + 0.2);
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+        osc.connect(gain); osc.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.25);
+      } else if (type === 'success') {
+        [261.63, 329.63, 392.00, 523.25].forEach((freq, idx) => {
+          const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+          o.type = 'square'; o.frequency.setValueAtTime(freq, audioCtx.currentTime + idx * 0.1);
+          g.gain.setValueAtTime(0.1, audioCtx.currentTime + idx * 0.1);
+          g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + idx * 0.1 + 0.25);
+          o.connect(g); o.connect(audioCtx.destination);
+          o.start(audioCtx.currentTime + idx * 0.1);
+          o.stop(audioCtx.currentTime + idx * 0.1 + 0.25);
+        });
+      } else if (type === 'trap') {
+        osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+        osc.frequency.linearRampToValueAtTime(80, audioCtx.currentTime + 0.3);
+        gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
+        osc.connect(gain); osc.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.35);
+      }
     }
 
     // ==========================================
-    // 🎮 GAME STATE & VISUAL FILL ANIMATION
+    // 🎮 CHAMBER STATE MANAGEMENT
     // ==========================================
+    let currentChamber = 1;
+
+    function nextChamber() {
+      currentChamber++;
+      if (currentChamber === 2) loadChamber2();
+      else if (currentChamber === 3) loadChamber3();
+      else if (currentChamber === 4) loadChamber4();
+      else if (currentChamber === 5) loadChamber5();
+      else if (currentChamber === 6) loadChamber6();
+    }
+
+    function log(msg) { document.getElementById('logMsg').innerText = msg; }
+
+    // ------------------------------------------
+    // 🏺 CHAMBER 1: WATER SCALE
+    // ------------------------------------------
     let u5 = 0, u3 = 0, basin = 0;
 
-    function updateUI() {
-      // Numerical values
+    function loadChamber1() {
+      document.getElementById('chamber-title').innerText = "🏺 CHAMBER 1: THE WATER SCALE";
+      document.getElementById('chamber-desc').innerHTML = "Pour <strong>exactly 4 Liters</strong> into the scale basin to unlock Door 1.";
+      document.getElementById('puzzle-viewport').innerHTML = `
+        <div class="visual-containers" style="width:100%;">
+          <div class="container-wrapper">
+            <div class="vessel urn5"><div id="fill5" class="water-fill"></div></div>
+            <div class="vessel-label">5L Urn (<span id="val5">0</span>/5L)</div>
+          </div>
+          <div class="container-wrapper">
+            <div class="vessel urn3"><div id="fill3" class="water-fill"></div></div>
+            <div class="vessel-label">3L Urn (<span id="val3">0</span>/3L)</div>
+          </div>
+          <div class="container-wrapper">
+            <div class="vessel basin"><div id="fillBasin" class="water-fill"></div></div>
+            <div class="vessel-label">⚖️ Basin (<span id="valBasin">0</span>/4L)</div>
+          </div>
+        </div>`;
+      
+      document.getElementById('controls-panel').innerHTML = `
+        <button class="action-btn" onclick="fill5()">Fill 5L Urn</button>
+        <button class="action-btn" onclick="fill3()">Fill 3L Urn</button>
+        <button class="action-btn" onclick="pour5to3()">Pour 5L ➔ 3L</button>
+        <button class="action-btn" onclick="pour3to5()">Pour 3L ➔ 5L</button>
+        <button class="action-btn" onclick="empty5()">Empty 5L Urn</button>
+        <button class="action-btn" onclick="empty3()">Empty 3L Urn</button>
+        <button class="action-btn full-btn" onclick="pour5ToBasin()">Pour 5L ➔ Basin</button>
+        <button class="action-btn full-btn" style="background:#8b2b2b;" onclick="resetBasin()">Empty Basin</button>`;
+      updateUI1();
+    }
+
+    function updateUI1() {
       document.getElementById('val5').innerText = u5;
       document.getElementById('val3').innerText = u3;
       document.getElementById('valBasin').innerText = basin;
-
-      // Visual fill percentages
       document.getElementById('fill5').style.height = `${(u5 / 5) * 100}%`;
       document.getElementById('fill3').style.height = `${(u3 / 3) * 100}%`;
       document.getElementById('fillBasin').style.height = `${(basin / 4) * 100}%`;
     }
 
-    function fill5() { u5 = 5; updateUI(); playPourSound(); log("Filled 5L urn."); }
-    function fill3() { u3 = 3; updateUI(); playPourSound(); log("Filled 3L urn."); }
-    function empty5() { u5 = 0; updateUI(); playClickSound(); log("Emptied 5L urn."); }
-    function empty3() { u3 = 0; updateUI(); playClickSound(); log("Emptied 3L urn."); }
-
-    function pour5to3() {
-      let space = 3 - u3;
-      let transfer = Math.min(u5, space);
-      u5 -= transfer; u3 += transfer;
-      updateUI(); playPourSound();
-      log(`Poured ${transfer}L from 5L to 3L urn.`);
-    }
-
-    function pour3to5() {
-      let space = 5 - u5;
-      let transfer = Math.min(u3, space);
-      u3 -= transfer; u5 += transfer;
-      updateUI(); playPourSound();
-      log(`Poured ${transfer}L from 3L to 5L urn.`);
-    }
-
+    function fill5() { u5 = 5; updateUI1(); playSound('pour'); log("Filled 5L urn."); }
+    function fill3() { u3 = 3; updateUI1(); playSound('pour'); log("Filled 3L urn."); }
+    function empty5() { u5 = 0; updateUI1(); playSound('click'); log("Emptied 5L urn."); }
+    function empty3() { u3 = 0; updateUI1(); playSound('click'); log("Emptied 3L urn."); }
+    function pour5to3() { let t = Math.min(u5, 3 - u3); u5 -= t; u3 += t; updateUI1(); playSound('pour'); }
+    function pour3to5() { let t = Math.min(u3, 5 - u5); u3 -= t; u5 += t; updateUI1(); playSound('pour'); }
     function pour5ToBasin() {
-      if (u5 === 0) {
-        log("The 5L urn is empty!");
-        playClickSound();
-        return;
-      }
-      basin += u5;
-      u5 = 0;
-      updateUI();
-      
+      if (u5 === 0) { log("5L urn is empty!"); playSound('click'); return; }
+      basin += u5; u5 = 0; updateUI1();
       if (basin === 4) {
-        playSuccessSound();
-        log("🎉 SUCCESS! The scale locks into place and the stone door rumbles open!");
+        playSound('success'); log("🎉 CHAMBER 1 CLEAR! Proceeding to Chamber 2...");
+        setTimeout(nextChamber, 1800);
       } else if (basin > 4) {
-        playTrapSound();
-        log(`🚨 TRAP TRIGGERED! You poured ${basin}L (overflow!). Resetting basin...`);
-        basin = 0;
-        updateUI();
+        playSound('trap'); log("🚨 OVERFLOW TRAP! Basin reset."); basin = 0; updateUI1();
+      }
+    }
+    function resetBasin() { basin = 0; updateUI1(); playSound('click'); }
+
+    // ------------------------------------------
+    // 𓀀 CHAMBER 2: HIEROGLYPH CODE
+    // ------------------------------------------
+    const targetSeq2 = ['👁️', '𓃭', '𓆣'];
+    let userSeq2 = [];
+
+    function loadChamber2() {
+      document.getElementById('chamber-title').innerText = "𓀀 CHAMBER 2: HIEROGLYPH CODE";
+      document.getElementById('chamber-desc').innerHTML = "Press the glyphs in correct order according to the ancient sequence: <strong>Eye ➔ Lion ➔ Scarab</strong>.";
+      document.getElementById('puzzle-viewport').innerHTML = `
+        <div style="font-size:1.8rem; letter-spacing: 10px; margin-bottom: 12px; min-height: 40px;" id="inputSeq2">_ _ _</div>
+        <div>
+          <button class="glyph-btn" onclick="pressGlyph2('𓆣')">𓆣</button>
+          <button class="glyph-btn" onclick="pressGlyph2('👁️')">👁️</button>
+          <button class="glyph-btn" onclick="pressGlyph2('𓃭')">𓃭</button>
+          <button class="glyph-btn" onclick="pressGlyph2('🐍')">🐍</button>
+        </div>`;
+      document.getElementById('controls-panel').innerHTML = `
+        <button class="action-btn full-btn" style="background:#8b2b2b;" onclick="resetSeq2()">Reset Input</button>`;
+      log("Select the 3 correct hieroglyphs.");
+    }
+
+    function pressGlyph2(symbol) {
+      if (userSeq2.length >= 3) return;
+      playSound('click');
+      userSeq2.push(symbol);
+      document.getElementById('inputSeq2').innerText = userSeq2.join(' ');
+      if (userSeq2.length === 3) {
+        if (JSON.stringify(userSeq2) === JSON.stringify(targetSeq2)) {
+          playSound('success');
+          log("🎉 CHAMBER 2 CLEAR! Unlocking Chamber 3...");
+          setTimeout(nextChamber, 1800);
+        } else {
+          playSound('trap');
+          log("🚨 WRONG SEQUENCE! The glyph wall resets.");
+          setTimeout(resetSeq2, 1000);
+        }
+      }
+    }
+    function resetSeq2() { userSeq2 = []; document.getElementById('inputSeq2').innerText = "_ _ _"; }
+
+    // ------------------------------------------
+    // ☀️ CHAMBER 3: REFLECTOR BEAMS
+    // ------------------------------------------
+    let angles3 = [0, 90, 180]; // Mirror rotational angles
+
+    function loadChamber3() {
+      document.getElementById('chamber-title').innerText = "☀️ CHAMBER 3: SUN BEAM ALIGNMENT";
+      document.getElementById('chamber-desc').innerHTML = "Rotate the 3 solar mirrors so the light beam hits the target eye at <strong>45° ➔ 135° ➔ 90°</strong>.";
+      document.getElementById('puzzle-viewport').innerHTML = `
+        <div style="display:flex; justify-content:space-around; width:100%;">
+          <div>🪞 Mirror 1<br><button class="dial-btn" id="m0" onclick="rotateMirror(0)">0°</button></div>
+          <div>🪞 Mirror 2<br><button class="dial-btn" id="m1" onclick="rotateMirror(1)">0°</button></div>
+          <div>🪞 Mirror 3<br><button class="dial-btn" id="m2" onclick="rotateMirror(2)">0°</button></div>
+        </div>`;
+      document.getElementById('controls-panel').innerHTML = `
+        <button class="action-btn full-btn" onclick="checkBeam3()">Align Light Beam</button>`;
+      updateMirrors3();
+      log("Click mirrors to rotate by 45°.");
+    }
+
+    function rotateMirror(idx) {
+      playSound('click');
+      angles3[idx] = (angles3[idx] + 45) % 360;
+      updateMirrors3();
+    }
+    function updateMirrors3() {
+      for(let i=0; i<3; i++) document.getElementById(`m${i}`).innerText = `${angles3[i]}°`;
+    }
+    function checkBeam3() {
+      if (angles3[0] === 45 && angles3[1] === 135 && angles3[2] === 90) {
+        playSound('success');
+        log("🎉 CHAMBER 3 CLEAR! Beam hits crystal target!");
+        setTimeout(nextChamber, 1800);
       } else {
-        playPourSound();
-        log(`Poured water into scale basin. Total in basin: ${basin}L.`);
+        playSound('trap');
+        log("🚨 LIGHT MISALIGNED! Adjust mirror angles.");
       }
     }
 
-    function resetBasin() {
-      basin = 0;
-      updateUI();
-      playClickSound();
-      log("Scale basin emptied.");
+    // ------------------------------------------
+    // 𓃰 CHAMBER 4: ANUBIS WEIGHT BALANCE
+    // ------------------------------------------
+    let leftPan4 = 0, rightPan4 = 0;
+
+    function loadChamber4() {
+      document.getElementById('chamber-title').innerText = "⚖️ CHAMBER 4: SCALES OF ANUBIS";
+      document.getElementById('chamber-desc').innerHTML = "Add gold coins (weights 3, 5, 8) to balance both scale pans equally at <strong>16kg each</strong>.";
+      document.getElementById('puzzle-viewport').innerHTML = `
+        <div style="display:flex; justify-content:space-between; width:100%; font-size:1.1rem;">
+          <div>Left Pan: <strong id="lp4">0</strong>/16kg</div>
+          <div>Right Pan: <strong id="rp4">0</strong>/16kg</div>
+        </div>`;
+      document.getElementById('controls-panel').innerHTML = `
+        <button class="action-btn" onclick="addWeight4('L', 3)">+3kg Left</button>
+        <button class="action-btn" onclick="addWeight4('R', 3)">+3kg Right</button>
+        <button class="action-btn" onclick="addWeight4('L', 5)">+5kg Left</button>
+        <button class="action-btn" onclick="addWeight4('R', 5)">+5kg Right</button>
+        <button class="action-btn" onclick="addWeight4('L', 8)">+8kg Left</button>
+        <button class="action-btn" onclick="addWeight4('R', 8)">+8kg Right</button>
+        <button class="action-btn full-btn" style="background:#8b2b2b;" onclick="resetScales4()">Clear Scale</button>`;
+      log("Balance left and right scale weight.");
     }
 
-    function log(msg) { 
-      document.getElementById('logMsg').innerText = msg; 
+    function addWeight4(pan, val) {
+      playSound('pour');
+      if (pan === 'L') leftPan4 += val;
+      if (pan === 'R') rightPan4 += val;
+      document.getElementById('lp4').innerText = leftPan4;
+      document.getElementById('rp4').innerText = rightPan4;
+
+      if (leftPan4 === 16 && rightPan4 === 16) {
+        playSound('success');
+        log("🎉 CHAMBER 4 CLEAR! Anubis approves your balance.");
+        setTimeout(nextChamber, 1800);
+      } else if (leftPan4 > 16 || rightPan4 > 16) {
+        playSound('trap');
+        log("🚨 OVERWEIGHT! The scale tilts and resets.");
+        setTimeout(resetScales4, 1000);
+      }
+    }
+    function resetScales4() {
+      leftPan4 = 0; rightPan4 = 0;
+      document.getElementById('lp4').innerText = 0;
+      document.getElementById('rp4').innerText = 0;
     }
 
-    // Initial load
-    updateUI();
+    // ------------------------------------------
+    // 🐍 CHAMBER 5: COBRA POISON DIAL
+    // ------------------------------------------
+    let dials5 = [0, 0, 0];
+
+    function loadChamber5() {
+      document.getElementById('chamber-title').innerText = "🐍 CHAMBER 5: COBRA SNAKE DIALS";
+      document.getElementById('chamber-desc').innerHTML = "Turn the 3 venom dials to match the sum of <strong>15</strong>, where Dial 1 + Dial 2 = Dial 3.";
+      document.getElementById('puzzle-viewport').innerHTML = `
+        <div style="display:flex; justify-content:space-around; width:100%;">
+          <div>Dial 1<br><button class="dial-btn" id="d0" onclick="spinDial5(0)">0</button></div>
+          <div>Dial 2<br><button class="dial-btn" id="d1" onclick="spinDial5(1)">0</button></div>
+          <div>Dial 3<br><button class="dial-btn" id="d2" onclick="spinDial5(2)">0</button></div>
+        </div>`;
+      document.getElementById('controls-panel').innerHTML = `
+        <button class="action-btn full-btn" onclick="verifyDials5()">Disarm Cobra Lock</button>`;
+      log("Set dials (e.g. 4 + 5 = 9). Total sum must equal 15.");
+    }
+
+    function spinDial5(idx) {
+      playSound('click');
+      dials5[idx] = (dials5[idx] + 1) % 10;
+      document.getElementById(`d${idx}`).innerText = dials5[idx];
+    }
+
+    function verifyDials5() {
+      const sum = dials5[0] + dials5[1] + dials5[2];
+      if (sum === 15 && (dials5[0] + dials5[1] === dials5[2])) {
+        playSound('success');
+        log("🎉 CHAMBER 5 CLEAR! Cobra disarmed!");
+        setTimeout(nextChamber, 1800);
+      } else {
+        playSound('trap');
+        log("🚨 COBRA TRAP! Requirements: D1 + D2 = D3 AND total sum = 15.");
+      }
+    }
+
+    // ------------------------------------------
+    // 🏛️ CHAMBER 6: SLIDING RUNES
+    // ------------------------------------------
+    let sequence6 = [];
+
+    function loadChamber6() {
+      document.getElementById('chamber-title').innerText = "🏛️ CHAMBER 6: THE ELEMENTAL RUNES";
+      document.getElementById('chamber-desc').innerHTML = "Activate elements in natural order: <strong>🔥 Fire ➔ 💧 Water ➔ 🪨 Earth ➔ 💨 Air</strong>.";
+      document.getElementById('puzzle-viewport').innerHTML = `
+        <div id="rune-display" style="font-size:1.6rem; margin-bottom:12px;">_ _ _ _</div>
+        <div>
+          <button class="tile-btn" onclick="pressRune6('🪨')">🪨 Earth</button>
+          <button class="tile-btn" onclick="pressRune6('🔥')">🔥 Fire</button>
+          <button class="tile-btn" onclick="pressRune6('💨')">💨 Air</button>
+          <button class="tile-btn" onclick="pressRune6('💧')">💧 Water</button>
+        </div>`;
+      document.getElementById('controls-panel').innerHTML = `
+        <button class="action-btn full-btn" style="background:#8b2b2b;" onclick="resetRunes6()">Reset Elements</button>`;
+      log("Select elements in creation order.");
+    }
+
+    function pressRune6(element) {
+      if (sequence6.length >= 4) return;
+      playSound('click');
+      sequence6.push(element);
+      document.getElementById('rune-display').innerText = sequence6.join(' ');
+
+      if (sequence6.length === 4) {
+        if (JSON.stringify(sequence6) === JSON.stringify(['🔥', '💧', '🪨', '💨'])) {
+          playSound('success');
+          log("🎉 CHAMBER 6 CLEAR! You passed the elemental trials!");
+        } else {
+          playSound('trap');
+          log("🚨 WRONG ORDER! The elemental seal breaks.");
+          setTimeout(resetRunes6, 1000);
+        }
+      }
+    }
+    function resetRunes6() { sequence6 = []; document.getElementById('rune-display').innerText = "_ _ _ _"; }
+
+    // Start Game at Chamber 1
+    loadChamber1();
   </script>
 </body>
 </html>
