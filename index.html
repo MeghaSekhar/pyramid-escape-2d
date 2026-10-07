@@ -2,30 +2,187 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Pyramid of 20 Trials</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pyramid Escape: Chamber 1</title>
   <style>
-    body { background: #0f0d0a; color: #f0c070; font-family: monospace; display: flex; flex-direction: column; align-items: center; margin: 0; padding: 20px; }
-    #game-container { border: 4px solid #b8860b; background: #1a150e; padding: 20px; box-shadow: 0 0 20px #000; text-align: center; width: 600px; }
-    canvas { background: #050403; border: 2px solid #554020; margin-bottom: 15px; }
-    .hud { display: flex; justify-content: space-between; font-size: 18px; margin-bottom: 10px; }
-    #ui-box { background: #2a2015; border: 1px solid #8b6508; padding: 10px; margin-top: 10px; min-height: 80px; }
-    input { background: #0f0d0a; border: 1px solid #b8860b; color: #fff; padding: 8px; font-family: monospace; width: 70%; }
-    button { background: #b8860b; border: none; color: #000; padding: 8px 15px; font-weight: bold; cursor: pointer; }
-    button:hover { background: #ffd700; }
+    body { 
+      background: #1a1410; 
+      color: #f3e5ab; 
+      font-family: monospace; 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      justify-content: center; 
+      min-height: 100vh; 
+      margin: 0; 
+    }
+    .game-card { 
+      background: #2c221a; 
+      border: 3px solid #d4af37; 
+      padding: 24px; 
+      border-radius: 8px; 
+      width: 380px; 
+      text-align: center; 
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8); 
+      transition: background 0.3s ease;
+    }
+    h1 { color: #d4af37; font-size: 1.4rem; margin-bottom: 8px; }
+    p { font-size: 0.9rem; line-height: 1.4; color: #e0d0b0; }
+    .status-box { background: #120e0b; border: 1px solid #8b5a2b; padding: 12px; margin: 16px 0; font-size: 1.1rem; }
+    .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    button { 
+      background: #8b5a2b; 
+      color: #fff; 
+      border: 1px solid #d4af37; 
+      padding: 10px; 
+      cursor: pointer; 
+      font-family: inherit; 
+      font-weight: bold; 
+      border-radius: 4px; 
+    }
+    button:hover { background: #d4af37; color: #1a1410; }
+    .full-btn { grid-column: span 2; background: #2e6f40; }
+    .full-btn:hover { background: #3eb460; color: #fff; }
+    .log { margin-top: 12px; font-size: 0.85rem; color: #ffab40; min-height: 24px; }
   </style>
 </head>
 <body>
-  <div id="game-container">
-    <div class="hud">
-      <span id="chamber-title">Chamber 1 / 20</span>
-      <span>Status: TRAPPED</span>
+
+  <div class="game-card" id="card">
+    <h1>🏺 CHAMBER 1: THE WATER SCALE</h1>
+    <p>The granite gate slams shut! To unlock Door 1 without triggering the dart trap, pour <strong>exactly 4 Liters</strong> onto the scale basin.</p>
+
+    <div class="status-box">
+      <div>5L Urn: <span id="urn5">0</span> / 5 L</div>
+      <div>3L Urn: <span id="urn3">0</span> / 3 L</div>
     </div>
-    <canvas id="canvas" width="560" height="300"></canvas>
-    <div id="ui-box">
-      <p id="dialogue">Maya: "The heavy stone door slammed shut behind us..."</p>
-      <div id="controls"></div>
+
+    <div class="controls">
+      <button onclick="fill5()">Fill 5L Urn</button>
+      <button onclick="fill3()">Fill 3L Urn</button>
+      <button onclick="pour5to3()">Pour 5L ➔ 3L</button>
+      <button onclick="pour3to5()">Pour 3L ➔ 5L</button>
+      <button onclick="empty5()">Empty 5L Urn</button>
+      <button onclick="empty3()">Empty 3L Urn</button>
+      <button class="full-btn" onclick="checkScale()">Pour 5L onto Scale!</button>
     </div>
+
+    <div class="log" id="logMsg"></div>
   </div>
-  <script src="game.js"></script>
+
+  <script>
+    // ==========================================
+    // 🔊 WEB AUDIO SYNTHESIZER (No files needed)
+    // ==========================================
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playClickSound() {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.08);
+      gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.08);
+    }
+
+    function playPourSound() {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(180, audioCtx.currentTime);
+      osc.frequency.linearRampToValueAtTime(320, audioCtx.currentTime + 0.2);
+      gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.25);
+    }
+
+    function playSuccessSound() {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const notes = [261.63, 329.63, 392.00, 523.25]; // C4, E4, G4, C5
+      notes.forEach((freq, idx) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + idx * 0.1);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime + idx * 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + idx * 0.1 + 0.25);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(audioCtx.currentTime + idx * 0.1);
+        osc.stop(audioCtx.currentTime + idx * 0.1 + 0.25);
+      });
+    }
+
+    function playTrapSound() {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+      osc.frequency.linearRampToValueAtTime(80, audioCtx.currentTime + 0.3);
+      gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.35);
+    }
+
+    // ==========================================
+    // 🎮 GAME STATE & LOGIC
+    // ==========================================
+    let u5 = 0, u3 = 0;
+
+    function updateUI() {
+      document.getElementById('urn5').innerText = u5;
+      document.getElementById('urn3').innerText = u3;
+    }
+
+    function fill5() { u5 = 5; updateUI(); playPourSound(); log("Filled 5L urn."); }
+    function fill3() { u3 = 3; updateUI(); playPourSound(); log("Filled 3L urn."); }
+    function empty5() { u5 = 0; updateUI(); playClickSound(); log("Emptied 5L urn onto ground."); }
+    function empty3() { u3 = 0; updateUI(); playClickSound(); log("Emptied 3L urn onto ground."); }
+
+    function pour5to3() {
+      let space = 3 - u3;
+      let transfer = Math.min(u5, space);
+      u5 -= transfer; u3 += transfer;
+      updateUI(); playPourSound();
+      log(`Poured ${transfer}L from 5L to 3L urn.`);
+    }
+
+    function pour3to5() {
+      let space = 5 - u5;
+      let transfer = Math.min(u3, space);
+      u3 -= transfer; u5 += transfer;
+      updateUI(); playPourSound();
+      log(`Poured ${transfer}L from 3L to 5L urn.`);
+    }
+
+    function checkScale() {
+      if (u5 === 4) {
+        playSuccessSound();
+        log("🎉 SUCCESS! The stone door rumbles open. You unlocked Chamber 1!");
+      } else {
+        playTrapSound();
+        log(`🚨 TRAP TRIGGERED! You poured ${u5}L instead of 4L. Resetting...`);
+        u5 = 0; u3 = 0; updateUI();
+      }
+    }
+
+    function log(msg) { 
+      document.getElementById('logMsg').innerText = msg; 
+    }
+  </script>
 </body>
 </html>
