@@ -3,88 +3,117 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pyramid Escape: Chamber 1</title>
+  <title>Pyramid of 20 Trials</title>
   <style>
     body { 
-      background: #1a1410; 
-      color: #f3e5ab; 
+      background: #0f0d0a; 
+      color: #f0c070; 
       font-family: monospace; 
       display: flex; 
       flex-direction: column; 
       align-items: center; 
-      justify-content: center; 
-      min-height: 100vh; 
       margin: 0; 
+      padding: 20px; 
+      min-height: 100vh;
+      box-sizing: border-box;
     }
-    .game-card { 
-      background: #2c221a; 
-      border: 3px solid #d4af37; 
-      padding: 24px; 
-      border-radius: 8px; 
-      width: 380px; 
+    #game-container { 
+      border: 4px solid #b8860b; 
+      background: #1a150e; 
+      padding: 20px; 
+      box-shadow: 0 0 25px rgba(0,0,0,0.9); 
       text-align: center; 
-      box-shadow: 0 10px 30px rgba(0,0,0,0.8); 
+      width: 600px; 
+      box-sizing: border-box;
     }
-    h1 { color: #d4af37; font-size: 1.4rem; margin-bottom: 8px; }
-    p { font-size: 0.9rem; line-height: 1.4; color: #e0d0b0; }
-    .status-box { 
-      background: #120e0b; 
-      border: 1px solid #8b5a2b; 
-      padding: 12px; 
-      margin: 16px 0; 
-      font-size: 1.1rem; 
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
+    canvas { 
+      background: #050403; 
+      border: 2px solid #554020; 
+      margin-bottom: 15px; 
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
     }
-    .basin-display {
-      border-top: 1px dashed #8b5a2b;
-      padding-top: 6px;
-      margin-top: 4px;
-      color: #d4af37;
+    .hud { 
+      display: flex; 
+      justify-content: space-between; 
+      font-size: 18px; 
+      margin-bottom: 10px; 
       font-weight: bold;
     }
-    .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    button { 
-      background: #8b5a2b; 
-      color: #fff; 
-      border: 1px solid #d4af37; 
-      padding: 10px; 
-      cursor: pointer; 
-      font-family: inherit; 
-      font-weight: bold; 
-      border-radius: 4px; 
+    #ui-box { 
+      background: #2a2015; 
+      border: 1px solid #8b6508; 
+      padding: 12px; 
+      margin-top: 10px; 
+      min-height: 90px; 
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
-    button:hover { background: #d4af37; color: #1a1410; }
-    .full-btn { grid-column: span 2; background: #2e6f40; }
-    .full-btn:hover { background: #3eb460; color: #fff; }
-    .log { margin-top: 12px; font-size: 0.85rem; color: #ffab40; min-height: 24px; }
+    #dialogue {
+      margin: 0 0 10px 0;
+      color: #ffab40;
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
+    .btn-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+    button { 
+      background: #b8860b; 
+      border: 1px solid #d4af37; 
+      color: #000; 
+      padding: 8px 10px; 
+      font-family: monospace;
+      font-weight: bold; 
+      cursor: pointer; 
+      border-radius: 3px;
+    }
+    button:hover { 
+      background: #ffd700; 
+    }
+    button.action-btn {
+      background: #2e6f40;
+      color: #fff;
+    }
+    button.action-btn:hover {
+      background: #3eb460;
+    }
+    button.danger-btn {
+      background: #8b2b2b;
+      color: #fff;
+    }
+    button.danger-btn:hover {
+      background: #b43e3e;
+    }
   </style>
 </head>
 <body>
 
-  <div class="game-card">
-    <h1>🏺 CHAMBER 1: THE WATER SCALE</h1>
-    <p>The granite gate slams shut! To unlock Door 1 without triggering the dart trap, pour <strong>exactly 4 Liters</strong> into the scale basin.</p>
-
-    <div class="status-box">
-      <div>5L Urn: <span id="urn5">0</span> / 5 L</div>
-      <div>3L Urn: <span id="urn3">0</span> / 3 L</div>
-      <div class="basin-display">⚖️ Scale Basin: <span id="basin">0</span> L</div>
+  <div id="game-container">
+    <div class="hud">
+      <span id="chamber-title">Chamber 1 / 20</span>
+      <span id="status-tag" style="color: #ff5252;">Status: TRAPPED</span>
     </div>
 
-    <div class="controls">
-      <button onclick="fill5()">Fill 5L Urn</button>
-      <button onclick="fill3()">Fill 3L Urn</button>
-      <button onclick="pour5to3()">Pour 5L ➔ 3L</button>
-      <button onclick="pour3to5()">Pour 3L ➔ 5L</button>
-      <button onclick="empty5()">Empty 5L Urn</button>
-      <button onclick="empty3()">Empty 3L Urn</button>
-      <button class="full-btn" onclick="pour5ToBasin()">Pour 5L ➔ Basin</button>
-      <button class="full-btn" style="background:#8b2b2b;" onclick="resetBasin()">Empty Basin</button>
-    </div>
+    <canvas id="canvas" width="550" height="280"></canvas>
 
-    <div class="log" id="logMsg"></div>
+    <div id="ui-box">
+      <p id="dialogue">Maya: "The heavy granite door slammed shut behind us! We need to balance exactly 4 Liters on the scale basin to unlock Chamber 2."</p>
+      <div id="controls" class="btn-grid">
+        <button onclick="fillUrn(5)">Fill 5L</button>
+        <button onclick="fillUrn(3)">Fill 3L</button>
+        <button class="action-btn" onclick="pour5ToBasin()">Pour 5L ➔ Basin</button>
+        <button onclick="pour(5, 3)">Pour 5L ➔ 3L</button>
+        <button onclick="pour(3, 5)">Pour 3L ➔ 5L</button>
+        <button class="danger-btn" onclick="resetBasin()">Empty Basin</button>
+        <button onclick="emptyUrn(5)">Empty 5L</button>
+        <button onclick="emptyUrn(3)">Empty 3L</button>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -93,127 +122,217 @@
     // ==========================================
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-    function playClickSound() {
+    function playSound(type) {
       if (audioCtx.state === 'suspended') audioCtx.resume();
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(600, audioCtx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.08);
-      gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
-      osc.connect(gain); osc.connect(audioCtx.destination);
-      osc.start(); osc.stop(audioCtx.currentTime + 0.08);
-    }
 
-    function playPourSound() {
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(180, audioCtx.currentTime);
-      osc.frequency.linearRampToValueAtTime(320, audioCtx.currentTime + 0.2);
-      gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
-      osc.connect(gain); osc.connect(audioCtx.destination);
-      osc.start(); osc.stop(audioCtx.currentTime + 0.25);
-    }
-
-    function playSuccessSound() {
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-      const notes = [261.63, 329.63, 392.00, 523.25];
-      notes.forEach((freq, idx) => {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'square';
-        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + idx * 0.1);
-        gain.gain.setValueAtTime(0.1, audioCtx.currentTime + idx * 0.1);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + idx * 0.1 + 0.25);
+      if (type === 'click') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
         osc.connect(gain); osc.connect(audioCtx.destination);
-        osc.start(audioCtx.currentTime + idx * 0.1);
-        osc.stop(audioCtx.currentTime + idx * 0.1 + 0.25);
-      });
-    }
-
-    function playTrapSound() {
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(150, audioCtx.currentTime);
-      osc.frequency.linearRampToValueAtTime(80, audioCtx.currentTime + 0.3);
-      gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
-      osc.connect(gain); osc.connect(audioCtx.destination);
-      osc.start(); osc.stop(audioCtx.currentTime + 0.35);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.08);
+      } else if (type === 'pour') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(180, audioCtx.currentTime);
+        osc.frequency.linearRampToValueAtTime(320, audioCtx.currentTime + 0.2);
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+        osc.connect(gain); osc.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.25);
+      } else if (type === 'success') {
+        [261.63, 329.63, 392.00, 523.25].forEach((freq, idx) => {
+          const o = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          o.type = 'square';
+          o.frequency.setValueAtTime(freq, audioCtx.currentTime + idx * 0.1);
+          g.gain.setValueAtTime(0.1, audioCtx.currentTime + idx * 0.1);
+          g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + idx * 0.1 + 0.25);
+          o.connect(g); o.connect(audioCtx.destination);
+          o.start(audioCtx.currentTime + idx * 0.1);
+          o.stop(audioCtx.currentTime + idx * 0.1 + 0.25);
+        });
+      } else if (type === 'trap') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+        osc.frequency.linearRampToValueAtTime(80, audioCtx.currentTime + 0.3);
+        gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
+        osc.connect(gain); osc.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.35);
+      }
     }
 
     // ==========================================
-    // 🎮 GAME STATE
+    // 🎨 CANVAS RENDERING SYSTEM
     // ==========================================
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    function drawContainer(x, y, w, h, fillPct, label, maxVal, currentVal) {
+      // Background
+      ctx.fillStyle = '#120e0b';
+      ctx.fillRect(x, y, w, h);
+
+      // Water Fill
+      if (fillPct > 0) {
+        ctx.fillStyle = '#2b78d4';
+        const fillHeight = (h - 4) * Math.min(fillPct, 1.0);
+        ctx.fillRect(x + 2, y + h - 2 - fillHeight, w - 4, fillHeight);
+      }
+
+      // Border Frame
+      ctx.strokeStyle = '#d4af37';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(x, y, w, h);
+
+      // Label & Value Readout
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '13px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(label, x + w / 2, y - 10);
+      ctx.fillText(`${currentVal}/${maxVal}L`, x + w / 2, y + h / 2 + 4);
+    }
+
+    function renderCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (currentChamber === 1) {
+        // 5L Urn
+        drawContainer(60, 90, 70, 140, u5 / 5, "5L Urn", 5, u5);
+        
+        // 3L Urn
+        drawContainer(200, 130, 60, 100, u3 / 3, "3L Urn", 3, u3);
+
+        // Scale Basin
+        drawContainer(370, 150, 120, 80, basin / 4, "Scale Basin", 4, basin);
+
+        // Balance Beam Graphic
+        ctx.strokeStyle = '#8b5a2b';
+        ctx.lineWidth = 6;
+        ctx.beginPath();
+        ctx.moveTo(340, 230);
+        ctx.lineTo(520, 230);
+        ctx.stroke();
+        
+        // Fulcrum
+        ctx.fillStyle = '#b8860b';
+        ctx.beginPath();
+        ctx.moveTo(430, 230);
+        ctx.lineTo(415, 260);
+        ctx.lineTo(445, 260);
+        ctx.closePath();
+        ctx.fill();
+      } else if (currentChamber === 2) {
+        ctx.fillStyle = '#ffd700';
+        ctx.font = '18px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText("🏛️ CHAMBER 2: THE ANCIENT HIEROGLYPHS", canvas.width / 2, 120);
+        ctx.font = '13px monospace';
+        ctx.fillStyle = '#e0d0b0';
+        ctx.fillText("Decrypt the hieroglyph code to open the inner vault...", canvas.width / 2, 160);
+      }
+    }
+
+    // ==========================================
+    // 🎮 GAME STATE & ACTIONS
+    // ==========================================
+    let currentChamber = 1;
     let u5 = 0, u3 = 0, basin = 0;
 
-    function updateUI() {
-      document.getElementById('urn5').innerText = u5;
-      document.getElementById('urn3').innerText = u3;
-      document.getElementById('basin').innerText = basin;
+    const dialogueEl = document.getElementById('dialogue');
+    const controlsEl = document.getElementById('controls');
+    const titleEl = document.getElementById('chamber-title');
+    const statusEl = document.getElementById('status-tag');
+
+    function setDialogue(msg) {
+      dialogueEl.innerText = msg;
     }
 
-    function fill5() { u5 = 5; updateUI(); playPourSound(); log("Filled 5L urn."); }
-    function fill3() { u3 = 3; updateUI(); playPourSound(); log("Filled 3L urn."); }
-    function empty5() { u5 = 0; updateUI(); playClickSound(); log("Emptied 5L urn onto ground."); }
-    function empty3() { u3 = 0; updateUI(); playClickSound(); log("Emptied 3L urn onto ground."); }
-
-    function pour5to3() {
-      let space = 3 - u3;
-      let transfer = Math.min(u5, space);
-      u5 -= transfer; u3 += transfer;
-      updateUI(); playPourSound();
-      log(`Poured ${transfer}L from 5L to 3L urn.`);
+    function fillUrn(type) {
+      playSound('pour');
+      if (type === 5) u5 = 5;
+      if (type === 3) u3 = 3;
+      setDialogue(`Maya: "Filled the ${type}L urn with water."`);
+      renderCanvas();
     }
 
-    function pour3to5() {
-      let space = 5 - u5;
-      let transfer = Math.min(u3, space);
-      u3 -= transfer; u5 += transfer;
-      updateUI(); playPourSound();
-      log(`Poured ${transfer}L from 3L to 5L urn.`);
+    function emptyUrn(type) {
+      playSound('click');
+      if (type === 5) u5 = 0;
+      if (type === 3) u3 = 0;
+      setDialogue(`Maya: "Emptied the ${type}L urn onto the stone floor."`);
+      renderCanvas();
+    }
+
+    function pour(from, to) {
+      playSound('pour');
+      if (from === 5 && to === 3) {
+        let space = 3 - u3;
+        let transfer = Math.min(u5, space);
+        u5 -= transfer; u3 += transfer;
+        setDialogue(`Maya: "Poured ${transfer}L from 5L urn into 3L urn."`);
+      } else if (from === 3 && to === 5) {
+        let space = 5 - u5;
+        let transfer = Math.min(u3, space);
+        u3 -= transfer; u5 += transfer;
+        setDialogue(`Maya: "Poured ${transfer}L from 3L urn into 5L urn."`);
+      }
+      renderCanvas();
     }
 
     function pour5ToBasin() {
       if (u5 === 0) {
-        log("The 5L urn is empty!");
-        playClickSound();
+        playSound('click');
+        setDialogue("Maya: 'The 5L urn is empty! Fill it first.'");
         return;
       }
+
       basin += u5;
       u5 = 0;
-      updateUI();
-      
+
       if (basin === 4) {
-        playSuccessSound();
-        log("🎉 SUCCESS! The scale locks into place and the stone door rumbles open!");
+        playSound('success');
+        setDialogue("🎉 SUCCESS! The scale locks into equilibrium and the heavy door rumbles open!");
+        statusEl.innerText = "Status: ESCAPED";
+        statusEl.style.color = "#4caf50";
+        renderCanvas();
+        setTimeout(goToChamber2, 2500);
       } else if (basin > 4) {
-        playTrapSound();
-        log(`🚨 TRAP TRIGGERED! You poured ${basin}L (overflow!). Resetting basin...`);
+        playSound('trap');
+        setDialogue(`🚨 TRAP TRIGGERED! You poured ${basin}L (Overflow!). The basin dumps automatically.`);
         basin = 0;
-        updateUI();
+        renderCanvas();
       } else {
-        playPourSound();
-        log(`Poured water into scale basin. Total in basin: ${basin}L.`);
+        playSound('pour');
+        setDialogue(`Maya: "Poured water into scale basin. Total in basin: ${basin}L."`);
+        renderCanvas();
       }
     }
 
     function resetBasin() {
+      playSound('click');
       basin = 0;
-      updateUI();
-      playClickSound();
-      log("Scale basin emptied.");
+      setDialogue("Maya: 'Emptied the scale basin.'");
+      renderCanvas();
     }
 
-    function log(msg) { 
-      document.getElementById('logMsg').innerText = msg; 
+    function goToChamber2() {
+      currentChamber = 2;
+      titleEl.innerText = "Chamber 2 / 20";
+      statusEl.innerText = "Status: EXPLORING";
+      statusEl.style.color = "#ffb74d";
+      setDialogue("Maya: 'We made it into Chamber 2! Glowing hieroglyph symbols line the wall ahead.'");
+      controlsEl.className = "";
+      controlsEl.innerHTML = `<button onclick="alert('Chamber 2 puzzle under construction!')" style="width:100%;">Inspect Hieroglyphs</button>`;
+      renderCanvas();
     }
+
+    // Initial render call
+    renderCanvas();
   </script>
 </body>
 </html>
