@@ -2,7 +2,7 @@
 
 A lightweight 2D browser-based puzzle adventure game built with HTML5 Canvas and JavaScript. Players guide Maya and Leo through 20 ancient chambers inside a sealed pyramid.
 
-🎮 **[Play Live Demo Here](https://your-username.github.io/pyramid-escape-2d/)**
+🎮 **[Play Live Demo Here](https://MeghaSekhar.github.io/pyramid-escape-2d/)**
 
 ## 🌟 Features & Architecture
 - **Zero External Dependencies:** Built using vanilla JavaScript and HTML5 Canvas.
