@@ -1,128 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pyramid Escape: 20 Trials</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chambers of the Pharaoh</title>
   <style>
-    body { 
-      background: #1a1410; 
-      color: #f3e5ab; 
-      font-family: monospace; 
-      display: flex; 
-      flex-direction: column; 
-      align-items: center; 
-      justify-content: center; 
-      min-height: 100vh; 
-      margin: 0; 
-      padding: 20px;
-      box-sizing: border-box;
-    }
-    .game-card { 
-      background: #2c221a; 
-      border: 3px solid #d4af37; 
-      padding: 24px; 
-      border-radius: 8px; 
-      width: 460px; 
-      text-align: center; 
-      box-shadow: 0 10px 30px rgba(0,0,0,0.8); 
-    }
-    h1 { color: #d4af37; font-size: 1.3rem; margin-bottom: 8px; }
-    p { font-size: 0.88rem; line-height: 1.4; color: #e0d0b0; margin-top: 0; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: #1a1612; color: #f4e8c1; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+    .game-card { background: #2a221b; border: 3px solid #d4af37; border-radius: 12px; width: 100%; max-width: 500px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); text-align: center; }
+    #chamber-title { color: #f39c12; margin-bottom: 8px; font-size: 1.4rem; }
+    #chamber-desc { margin-bottom: 20px; font-size: 0.95rem; line-height: 1.4; color: #dcd0ab; }
+    
+    .viewport { background: #14100d; border: 2px inset #5c4a30; border-radius: 8px; min-height: 180px; padding: 16px; display: flex; flex-direction: column; justify-content: center; align-items: center; margin-bottom: 16px; }
+    
+    .visual-containers { display: flex; justify-content: space-around; width: 100%; align-items: flex-end; }
+    .container-wrapper { display: flex; flex-direction: column; align-items: center; }
+    .vessel { border: 2px solid #d4af37; border-top: none; width: 50px; background: rgba(0,0,0,0.5); position: relative; border-radius: 0 0 6px 6px; overflow: hidden; }
+    .urn5 { height: 90px; }
+    .urn3 { height: 60px; }
+    .basin { height: 75px; width: 65px; border-color: #e74c3c; }
+    .water-fill { background: #3498db; width: 100%; position: absolute; bottom: 0; transition: height 0.3s ease; }
+    .vessel-label { font-size: 0.75rem; margin-top: 6px; color: #b5a47e; }
 
-    /* Visual Containers Section (Chamber 1) */
-    .visual-containers {
-      display: flex;
-      justify-content: space-around;
-      align-items: flex-end;
-      background: #120e0b;
-      border: 1px solid #8b5a2b;
-      padding: 20px 10px;
-      margin: 16px 0;
-      border-radius: 6px;
-      min-height: 170px;
-    }
-    .container-wrapper { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-    .vessel {
-      width: 60px;
-      border: 3px solid #d4af37;
-      border-top: 1px dashed #d4af37;
-      background: rgba(0, 0, 0, 0.4);
-      position: relative;
-      display: flex;
-      align-items: flex-end;
-      overflow: hidden;
-      border-radius: 0 0 6px 6px;
-    }
-    .vessel.urn5 { height: 120px; }
-    .vessel.urn3 { height: 80px; }
-    .vessel.basin { height: 100px; width: 90px; border-color: #ffd700; }
-    .water-fill {
-      width: 100%; height: 0%;
-      background: linear-gradient(180deg, #4facfe 0%, #00f2fe 100%);
-      transition: height 0.4s ease-in-out;
-      box-shadow: 0 0 10px rgba(79, 172, 254, 0.5);
-    }
-    .vessel-label { font-size: 0.8rem; color: #e0d0b0; font-weight: bold; }
+    .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+    .action-btn, .glyph-btn, .dial-btn, .tile-btn { background: #3a2e24; color: #f4e8c1; border: 1px solid #d4af37; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: background 0.2s; }
+    .action-btn:hover, .glyph-btn:hover, .dial-btn:hover, .tile-btn:hover { background: #524234; }
+    .full-btn { grid-column: span 2; }
+    .glyph-btn { font-size: 1.8rem; margin: 4px; padding: 8px 16px; }
+    .dial-btn { font-size: 1.2rem; font-weight: bold; width: 70px; height: 50px; margin: 4px; }
+    .tile-btn { font-size: 1rem; margin: 4px; padding: 10px 14px; }
 
-    /* Interactive Puzzle Box for Chambers 2-6 */
-    #puzzle-viewport {
-      background: #120e0b;
-      border: 1px solid #8b5a2b;
-      padding: 16px;
-      margin: 16px 0;
-      border-radius: 6px;
-      min-height: 150px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .glyph-btn, .tile-btn, .dial-btn {
-      background: #3a2b1f;
-      border: 2px solid #b8860b;
-      color: #ffd700;
-      font-size: 1.4rem;
-      padding: 10px 16px;
-      margin: 4px;
-      cursor: pointer;
-      border-radius: 4px;
-    }
-    .glyph-btn:hover, .tile-btn:hover, .dial-btn:hover { background: #5c4532; }
-
-    .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    button.action-btn { 
-      background: #8b5a2b; 
-      color: #fff; 
-      border: 1px solid #d4af37; 
-      padding: 10px; 
-      cursor: pointer; 
-      font-family: inherit; 
-      font-weight: bold; 
-      border-radius: 4px; 
-    }
-    button.action-btn:hover { background: #d4af37; color: #1a1410; }
-    .full-btn { grid-column: span 2; background: #2e6f40; }
-    .full-btn:hover { background: #3eb460; color: #fff; }
-    .log { margin-top: 12px; font-size: 0.85rem; color: #ffab40; min-height: 24px; }
+    .status-log { background: #0f0d0b; border: 1px solid #3a2e24; border-radius: 6px; padding: 10px; font-size: 0.85rem; color: #e67e22; min-height: 42px; display: flex; align-items: center; justify-content: center; }
   </style>
 </head>
 <body>
 
   <div class="game-card">
-    <h1 id="chamber-title">🏺 CHAMBER 1: THE WATER SCALE</h1>
-    <p id="chamber-desc">The granite gate slams shut! Pour <strong>exactly 4 Liters</strong> into the scale basin to unlock Door 1.</p>
-
-    <!-- Main Viewport Area -->
-    <div id="puzzle-viewport"></div>
-
-    <!-- Interactive Buttons -->
+    <h2 id="chamber-title">Loading...</h2>
+    <p id="chamber-desc">Loading level description...</p>
+    
+    <div id="puzzle-viewport" class="viewport"></div>
     <div id="controls-panel" class="controls"></div>
-
-    <div class="log" id="logMsg"></div>
+    <div class="status-log" id="logMsg">Welcome, explorer.</div>
   </div>
-// ==========================================
+
+  <script>
+    // ==========================================
     // 🔊 AUDIO SYNTHESIZER
     // ==========================================
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -459,7 +382,8 @@
     }
     function resetRunes6() { sequence6 = []; document.getElementById('rune-display').innerText = "_ _ _ _"; }
 
-    // Boot game
+    // Start game
     loadChamber1();
+  </script>
 </body>
 </html>
