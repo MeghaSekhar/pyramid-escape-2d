@@ -24,11 +24,26 @@
       width: 380px; 
       text-align: center; 
       box-shadow: 0 10px 30px rgba(0,0,0,0.8); 
-      transition: background 0.3s ease;
     }
     h1 { color: #d4af37; font-size: 1.4rem; margin-bottom: 8px; }
     p { font-size: 0.9rem; line-height: 1.4; color: #e0d0b0; }
-    .status-box { background: #120e0b; border: 1px solid #8b5a2b; padding: 12px; margin: 16px 0; font-size: 1.1rem; }
+    .status-box { 
+      background: #120e0b; 
+      border: 1px solid #8b5a2b; 
+      padding: 12px; 
+      margin: 16px 0; 
+      font-size: 1.1rem; 
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .basin-display {
+      border-top: 1px dashed #8b5a2b;
+      padding-top: 6px;
+      margin-top: 4px;
+      color: #d4af37;
+      font-weight: bold;
+    }
     .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     button { 
       background: #8b5a2b; 
@@ -48,13 +63,14 @@
 </head>
 <body>
 
-  <div class="game-card" id="card">
+  <div class="game-card">
     <h1>🏺 CHAMBER 1: THE WATER SCALE</h1>
-    <p>The granite gate slams shut! To unlock Door 1 without triggering the dart trap, pour <strong>exactly 4 Liters</strong> onto the scale basin.</p>
+    <p>The granite gate slams shut! To unlock Door 1 without triggering the dart trap, pour <strong>exactly 4 Liters</strong> into the scale basin.</p>
 
     <div class="status-box">
       <div>5L Urn: <span id="urn5">0</span> / 5 L</div>
       <div>3L Urn: <span id="urn3">0</span> / 3 L</div>
+      <div class="basin-display">⚖️ Scale Basin: <span id="basin">0</span> L</div>
     </div>
 
     <div class="controls">
@@ -64,7 +80,8 @@
       <button onclick="pour3to5()">Pour 3L ➔ 5L</button>
       <button onclick="empty5()">Empty 5L Urn</button>
       <button onclick="empty3()">Empty 3L Urn</button>
-      <button class="full-btn" onclick="checkScale()">Pour 5L onto Scale!</button>
+      <button class="full-btn" onclick="pour5ToBasin()">Pour 5L ➔ Basin</button>
+      <button class="full-btn" style="background:#8b2b2b;" onclick="resetBasin()">Empty Basin</button>
     </div>
 
     <div class="log" id="logMsg"></div>
@@ -72,7 +89,7 @@
 
   <script>
     // ==========================================
-    // 🔊 WEB AUDIO SYNTHESIZER (No files needed)
+    // 🔊 WEB AUDIO SYNTHESIZER
     // ==========================================
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
@@ -85,10 +102,8 @@
       osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.08);
       gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + 0.08);
+      osc.connect(gain); osc.connect(audioCtx.destination);
+      osc.start(); osc.stop(audioCtx.currentTime + 0.08);
     }
 
     function playPourSound() {
@@ -100,15 +115,13 @@
       osc.frequency.linearRampToValueAtTime(320, audioCtx.currentTime + 0.2);
       gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + 0.25);
+      osc.connect(gain); osc.connect(audioCtx.destination);
+      osc.start(); osc.stop(audioCtx.currentTime + 0.25);
     }
 
     function playSuccessSound() {
       if (audioCtx.state === 'suspended') audioCtx.resume();
-      const notes = [261.63, 329.63, 392.00, 523.25]; // C4, E4, G4, C5
+      const notes = [261.63, 329.63, 392.00, 523.25];
       notes.forEach((freq, idx) => {
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
@@ -116,8 +129,7 @@
         osc.frequency.setValueAtTime(freq, audioCtx.currentTime + idx * 0.1);
         gain.gain.setValueAtTime(0.1, audioCtx.currentTime + idx * 0.1);
         gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + idx * 0.1 + 0.25);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
+        osc.connect(gain); osc.connect(audioCtx.destination);
         osc.start(audioCtx.currentTime + idx * 0.1);
         osc.stop(audioCtx.currentTime + idx * 0.1 + 0.25);
       });
@@ -132,20 +144,19 @@
       osc.frequency.linearRampToValueAtTime(80, audioCtx.currentTime + 0.3);
       gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + 0.35);
+      osc.connect(gain); osc.connect(audioCtx.destination);
+      osc.start(); osc.stop(audioCtx.currentTime + 0.35);
     }
 
     // ==========================================
-    // 🎮 GAME STATE & LOGIC
+    // 🎮 GAME STATE
     // ==========================================
-    let u5 = 0, u3 = 0;
+    let u5 = 0, u3 = 0, basin = 0;
 
     function updateUI() {
       document.getElementById('urn5').innerText = u5;
       document.getElementById('urn3').innerText = u3;
+      document.getElementById('basin').innerText = basin;
     }
 
     function fill5() { u5 = 5; updateUI(); playPourSound(); log("Filled 5L urn."); }
@@ -169,15 +180,35 @@
       log(`Poured ${transfer}L from 3L to 5L urn.`);
     }
 
-    function checkScale() {
-      if (u5 === 4) {
-        playSuccessSound();
-        log("🎉 SUCCESS! The stone door rumbles open. You unlocked Chamber 1!");
-      } else {
-        playTrapSound();
-        log(`🚨 TRAP TRIGGERED! You poured ${u5}L instead of 4L. Resetting...`);
-        u5 = 0; u3 = 0; updateUI();
+    function pour5ToBasin() {
+      if (u5 === 0) {
+        log("The 5L urn is empty!");
+        playClickSound();
+        return;
       }
+      basin += u5;
+      u5 = 0;
+      updateUI();
+      
+      if (basin === 4) {
+        playSuccessSound();
+        log("🎉 SUCCESS! The scale locks into place and the stone door rumbles open!");
+      } else if (basin > 4) {
+        playTrapSound();
+        log(`🚨 TRAP TRIGGERED! You poured ${basin}L (overflow!). Resetting basin...`);
+        basin = 0;
+        updateUI();
+      } else {
+        playPourSound();
+        log(`Poured water into scale basin. Total in basin: ${basin}L.`);
+      }
+    }
+
+    function resetBasin() {
+      basin = 0;
+      updateUI();
+      playClickSound();
+      log("Scale basin emptied.");
     }
 
     function log(msg) { 
