@@ -122,9 +122,7 @@
 
     <div class="log" id="logMsg"></div>
   </div>
-
-  <script>
-    // ==========================================
+// ==========================================
     // 🔊 AUDIO SYNTHESIZER
     // ==========================================
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -190,6 +188,7 @@
     let u5 = 0, u3 = 0, basin = 0;
 
     function loadChamber1() {
+      u5 = 0; u3 = 0; basin = 0;
       document.getElementById('chamber-title').innerText = "🏺 CHAMBER 1: THE WATER SCALE";
       document.getElementById('chamber-desc').innerHTML = "Pour <strong>exactly 4 Liters</strong> into the scale basin to unlock Door 1.";
       document.getElementById('puzzle-viewport').innerHTML = `
@@ -221,6 +220,7 @@
     }
 
     function updateUI1() {
+      if (!document.getElementById('val5')) return;
       document.getElementById('val5').innerText = u5;
       document.getElementById('val3').innerText = u3;
       document.getElementById('valBasin').innerText = basin;
@@ -235,14 +235,17 @@
     function empty3() { u3 = 0; updateUI1(); playSound('click'); log("Emptied 3L urn."); }
     function pour5to3() { let t = Math.min(u5, 3 - u3); u5 -= t; u3 += t; updateUI1(); playSound('pour'); }
     function pour3to5() { let t = Math.min(u3, 5 - u5); u3 -= t; u5 += t; updateUI1(); playSound('pour'); }
+    
     function pour5ToBasin() {
       if (u5 === 0) { log("5L urn is empty!"); playSound('click'); return; }
       basin += u5; u5 = 0; updateUI1();
       if (basin === 4) {
         playSound('success'); log("🎉 CHAMBER 1 CLEAR! Proceeding to Chamber 2...");
-        setTimeout(nextChamber, 1800);
+        setTimeout(() => { nextChamber(); }, 1800);
       } else if (basin > 4) {
         playSound('trap'); log("🚨 OVERFLOW TRAP! Basin reset."); basin = 0; updateUI1();
+      } else {
+        playSound('pour'); log(`Poured water into scale basin. Total in basin: ${basin}L.`);
       }
     }
     function resetBasin() { basin = 0; updateUI1(); playSound('click'); }
@@ -254,6 +257,7 @@
     let userSeq2 = [];
 
     function loadChamber2() {
+      userSeq2 = [];
       document.getElementById('chamber-title').innerText = "𓀀 CHAMBER 2: HIEROGLYPH CODE";
       document.getElementById('chamber-desc').innerHTML = "Press the glyphs in correct order according to the ancient sequence: <strong>Eye ➔ Lion ➔ Scarab</strong>.";
       document.getElementById('puzzle-viewport').innerHTML = `
@@ -278,7 +282,7 @@
         if (JSON.stringify(userSeq2) === JSON.stringify(targetSeq2)) {
           playSound('success');
           log("🎉 CHAMBER 2 CLEAR! Unlocking Chamber 3...");
-          setTimeout(nextChamber, 1800);
+          setTimeout(() => { nextChamber(); }, 1800);
         } else {
           playSound('trap');
           log("🚨 WRONG SEQUENCE! The glyph wall resets.");
@@ -291,9 +295,10 @@
     // ------------------------------------------
     // ☀️ CHAMBER 3: REFLECTOR BEAMS
     // ------------------------------------------
-    let angles3 = [0, 90, 180]; // Mirror rotational angles
+    let angles3 = [0, 90, 180];
 
     function loadChamber3() {
+      angles3 = [0, 90, 180];
       document.getElementById('chamber-title').innerText = "☀️ CHAMBER 3: SUN BEAM ALIGNMENT";
       document.getElementById('chamber-desc').innerHTML = "Rotate the 3 solar mirrors so the light beam hits the target eye at <strong>45° ➔ 135° ➔ 90°</strong>.";
       document.getElementById('puzzle-viewport').innerHTML = `
@@ -320,7 +325,7 @@
       if (angles3[0] === 45 && angles3[1] === 135 && angles3[2] === 90) {
         playSound('success');
         log("🎉 CHAMBER 3 CLEAR! Beam hits crystal target!");
-        setTimeout(nextChamber, 1800);
+        setTimeout(() => { nextChamber(); }, 1800);
       } else {
         playSound('trap');
         log("🚨 LIGHT MISALIGNED! Adjust mirror angles.");
@@ -328,13 +333,14 @@
     }
 
     // ------------------------------------------
-    // 𓃰 CHAMBER 4: ANUBIS WEIGHT BALANCE
+    // ⚖️ CHAMBER 4: ANUBIS WEIGHT BALANCE
     // ------------------------------------------
     let leftPan4 = 0, rightPan4 = 0;
 
     function loadChamber4() {
+      leftPan4 = 0; rightPan4 = 0;
       document.getElementById('chamber-title').innerText = "⚖️ CHAMBER 4: SCALES OF ANUBIS";
-      document.getElementById('chamber-desc').innerHTML = "Add gold coins (weights 3, 5, 8) to balance both scale pans equally at <strong>16kg each</strong>.";
+      document.getElementById('chamber-desc').innerHTML = "Add gold coins to balance both scale pans equally at <strong>16kg each</strong>.";
       document.getElementById('puzzle-viewport').innerHTML = `
         <div style="display:flex; justify-content:space-between; width:100%; font-size:1.1rem;">
           <div>Left Pan: <strong id="lp4">0</strong>/16kg</div>
@@ -361,7 +367,7 @@
       if (leftPan4 === 16 && rightPan4 === 16) {
         playSound('success');
         log("🎉 CHAMBER 4 CLEAR! Anubis approves your balance.");
-        setTimeout(nextChamber, 1800);
+        setTimeout(() => { nextChamber(); }, 1800);
       } else if (leftPan4 > 16 || rightPan4 > 16) {
         playSound('trap');
         log("🚨 OVERWEIGHT! The scale tilts and resets.");
@@ -375,13 +381,14 @@
     }
 
     // ------------------------------------------
-    // 🐍 CHAMBER 5: COBRA POISON DIAL
+    // 🐍 CHAMBER 5: COBRA SNAKE DIALS
     // ------------------------------------------
     let dials5 = [0, 0, 0];
 
     function loadChamber5() {
+      dials5 = [0, 0, 0];
       document.getElementById('chamber-title').innerText = "🐍 CHAMBER 5: COBRA SNAKE DIALS";
-      document.getElementById('chamber-desc').innerHTML = "Turn the 3 venom dials to match the sum of <strong>15</strong>, where Dial 1 + Dial 2 = Dial 3.";
+      document.getElementById('chamber-desc').innerHTML = "Turn the 3 venom dials to match: <strong>Dial 1 + Dial 2 = Dial 3</strong> AND total sum = <strong>15</strong>.";
       document.getElementById('puzzle-viewport').innerHTML = `
         <div style="display:flex; justify-content:space-around; width:100%;">
           <div>Dial 1<br><button class="dial-btn" id="d0" onclick="spinDial5(0)">0</button></div>
@@ -390,7 +397,7 @@
         </div>`;
       document.getElementById('controls-panel').innerHTML = `
         <button class="action-btn full-btn" onclick="verifyDials5()">Disarm Cobra Lock</button>`;
-      log("Set dials (e.g. 4 + 5 = 9). Total sum must equal 15.");
+      log("Set dials so D1 + D2 = D3, and total sum equals 15.");
     }
 
     function spinDial5(idx) {
@@ -404,21 +411,22 @@
       if (sum === 15 && (dials5[0] + dials5[1] === dials5[2])) {
         playSound('success');
         log("🎉 CHAMBER 5 CLEAR! Cobra disarmed!");
-        setTimeout(nextChamber, 1800);
+        setTimeout(() => { nextChamber(); }, 1800);
       } else {
         playSound('trap');
-        log("🚨 COBRA TRAP! Requirements: D1 + D2 = D3 AND total sum = 15.");
+        log("🚨 COBRA TRAP! Try 3 + 4 = 7 or similar sequence totaling 15.");
       }
     }
 
     // ------------------------------------------
-    // 🏛️ CHAMBER 6: SLIDING RUNES
+    // 🏛️ CHAMBER 6: ELEMENTAL RUNES
     // ------------------------------------------
     let sequence6 = [];
 
     function loadChamber6() {
+      sequence6 = [];
       document.getElementById('chamber-title').innerText = "🏛️ CHAMBER 6: THE ELEMENTAL RUNES";
-      document.getElementById('chamber-desc').innerHTML = "Activate elements in natural order: <strong>🔥 Fire ➔ 💧 Water ➔ 🪨 Earth ➔ 💨 Air</strong>.";
+      document.getElementById('chamber-desc').innerHTML = "Activate elements in order: <strong>🔥 Fire ➔ 💧 Water ➔ 🪨 Earth ➔ 💨 Air</strong>.";
       document.getElementById('puzzle-viewport').innerHTML = `
         <div id="rune-display" style="font-size:1.6rem; margin-bottom:12px;">_ _ _ _</div>
         <div>
@@ -429,7 +437,7 @@
         </div>`;
       document.getElementById('controls-panel').innerHTML = `
         <button class="action-btn full-btn" style="background:#8b2b2b;" onclick="resetRunes6()">Reset Elements</button>`;
-      log("Select elements in creation order.");
+      log("Select elements in natural order.");
     }
 
     function pressRune6(element) {
@@ -441,18 +449,17 @@
       if (sequence6.length === 4) {
         if (JSON.stringify(sequence6) === JSON.stringify(['🔥', '💧', '🪨', '💨'])) {
           playSound('success');
-          log("🎉 CHAMBER 6 CLEAR! You passed the elemental trials!");
+          log("🎉 CHAMBER 6 CLEAR! All 6 chambers completed!");
         } else {
           playSound('trap');
-          log("🚨 WRONG ORDER! The elemental seal breaks.");
+          log("🚨 WRONG ORDER! The elemental seal resets.");
           setTimeout(resetRunes6, 1000);
         }
       }
     }
     function resetRunes6() { sequence6 = []; document.getElementById('rune-display').innerText = "_ _ _ _"; }
 
-    // Start Game at Chamber 1
+    // Boot game
     loadChamber1();
-  </script>
 </body>
 </html>
